@@ -1,0 +1,6 @@
+{
+    "name": "awsm3/imagesystem-docker",
+    "license": "MIT",
+    "type": "project",
+    "description": "Dockerized ImageSystem Http Service based on PHP 7 and Symfony 4."
+}

@@ -1,0 +1,14 @@
+# Dev tools, like PhpStorm
+.idea
+
+# Environment
+.env
+
+# Local data, like DB or stored files
+data/database/*
+data/storage/*
+application/public/files/
+etc/ssl/
+
+# Logs
+logs/nginx/
