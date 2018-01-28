@@ -3,11 +3,9 @@ ImageSystem
 Dockerized Symfony 4 HTTP API for edit images uploaded via [FileSystem API][1].
 --------------------------------------------------
 
-
-~~~~
-- Cropping images (in progress)
-- Resizing images (in progress)
-~~~~
+- Cropping images ![Done][check_img]
+- Resizing images ![Done][check_img]
+- ...
 
 
 *README is supplemented.*
@@ -16,3 +14,4 @@ Dockerized Symfony 4 HTTP API for edit images uploaded via [FileSystem API][1].
 
 
 [1]: https://github.com/AWSM3/filesystem-docker
+[check_img]: https://i.imgur.com/AsKiqx2.png
