@@ -62,6 +62,19 @@ class Manager
 
     /**
      * @param File $file
+     * @param int $width
+     * @param int $height
+     *
+     * @return void
+     */
+    public function resize(File $file, int $width, int $height): void {
+        $publicPath = $this->getPublicPath($file);
+
+        $this->imageServer->outputImage($publicPath, ['w' => $width, 'h' => $height]);
+    }
+
+    /**
+     * @param File $file
      *
      * @return mixed
      */
