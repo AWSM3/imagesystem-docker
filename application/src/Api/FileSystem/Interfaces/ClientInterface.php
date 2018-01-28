@@ -18,7 +18,7 @@ interface ClientInterface
     /**
      * @param string $id
      *
-     * @return ResponseInterface
+     * @return GetFileResponseInterface
      */
-    public function getFile(string $id): ResponseInterface;
+    public function getFile(string $id): GetFileResponseInterface;
 }

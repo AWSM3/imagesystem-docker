@@ -17,6 +17,7 @@ interface ResponseInterface
 {
     const
         SUCCESS_CODE = 200;
+
     /**
      * @return bool
      */
@@ -28,9 +29,11 @@ interface ResponseInterface
     public function getMessages(): array;
 
     /**
+     * @param string|null $key
+     *
      * @return mixed
      */
-    public function getData();
+    public function getData(string $key = null);
 
     /**
      * @return string
