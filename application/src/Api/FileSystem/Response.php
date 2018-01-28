@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Api\FileSystem;
 
 /** @uses */
+use App\Api\FileSystem\Exception\IncorrectDataItemException;
 use App\Api\FileSystem\Interfaces\ResponseInterface;
 
 /**
@@ -56,11 +57,21 @@ class Response implements ResponseInterface
     }
 
     /**
+     * @param string|null $key
+     *
+     * @throws IncorrectDataItemException
      * @return mixed
      */
-    public function getData()
+    public function getData(string $key = null)
     {
-        return $this->data;
+        if (!$key) {
+            return $this->data;
+        }
+        if (!isset($this->data[$key])) {
+            throw new IncorrectDataItemException("Ключ модели данных `{$key}` не обнаружен.");
+        }
+
+        return $this->data[$key];
     }
 
     /**
