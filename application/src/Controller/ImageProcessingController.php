@@ -63,7 +63,7 @@ class ImageProcessingController extends Controller
      *         "extension": "[\w]+"
      *     },
      *     methods={"GET"},
-     *     name="get_image"
+     *     name="crop_image"
      * )
      * @param int $width
      * @param int $height
@@ -86,5 +86,30 @@ class ImageProcessingController extends Controller
 //        }
 //
 //        return new RedirectResponse($processedImage->getAbsolutePublicPath());
+    }
+
+    /**
+     * @Route(
+     *     "/resize/{width}:{height}/{id}.{extension}",
+     *     requirements={
+     *         "width": "[\d]{2,4}",
+     *         "height": "[\d]{2,4}",
+     *         "id": "[\w-]+",
+     *         "extension": "[\w]+"
+     *     },
+     *     methods={"GET"},
+     *     name="resize_image"
+     * )
+     * @param int $width
+     * @param int $height
+     * @param string $id
+     * @param string $extension
+     *
+     * @return void
+     */
+    public function resize(int $width, int $height, string $id, string $extension)
+    {
+        $storedFile = $this->storageManager->getStoredFile($id);
+        $this->imageProcessingManager->resize($storedFile->getFile(), $width, $height);
     }
 }
