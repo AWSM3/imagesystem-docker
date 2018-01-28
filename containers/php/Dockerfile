@@ -39,3 +39,5 @@ RUN apt-get update && apt-get upgrade -y \
     && pecl install mongodb && docker-php-ext-enable mongodb \
     && pecl install redis && docker-php-ext-enable redis \
     && yes '' | pecl install imagick && docker-php-ext-enable imagick
+
+RUN docker-php-ext-install exif
