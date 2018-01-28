@@ -2,6 +2,8 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
   filesystem_url: '%env(FILESYSTEM_URL)%'
+  imagestorage_dir: '%env(IMAGESTORAGE_DIR)%'
+  imagecachestorage_dir: '%env(IMAGECACHESTORAGE_DIR)%'
 
 services:
     # default configuration for services in *this* file
