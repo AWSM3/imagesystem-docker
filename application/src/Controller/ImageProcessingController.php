@@ -9,11 +9,11 @@ declare(strict_types=1);
 namespace App\Controller;
 
 /** @uses */
-use App\Service\ImageProcessing\Exception\ImageAlreadyProcessed;
-use App\Service\ImageProcessing\Manager;
+use App\Api\FileSystem\Client;
+use App\Service\ImageProcessing\Manager as ImageProcessingManager;
+use App\Service\Storage\Manager\FileSystemManager as FileSystemStorageManager;
+use App\Utils\Http\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -23,17 +23,33 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ImageProcessingController extends Controller
 {
-    /** @var Manager */
+    /** @var ImageProcessingManager */
     private $imageProcessingManager;
+    /** @var Client */
+    private $filesystemClient;
+    /** @var Request */
+    private $requestUtil;
+    /** @var FileSystemStorageManager */
+    private $storageManager;
 
     /**
      * ImageProcessingController constructor.
      *
-     * @param Manager $imageProcessingManager
+     * @param ImageProcessingManager $imageProcessingManager
+     * @param Client $filesystemClient
+     * @param Request $requestUtil
+     * @param FileSystemStorageManager $storageManager
      */
-    public function __construct(Manager $imageProcessingManager)
-    {
-        // $this->imageProcessingManager = $imageProcessingManager;
+    public function __construct(
+        ImageProcessingManager $imageProcessingManager,
+        Client $filesystemClient,
+        Request $requestUtil,
+        FileSystemStorageManager $storageManager
+    ) {
+        $this->imageProcessingManager = $imageProcessingManager;
+        $this->filesystemClient = $filesystemClient;
+        $this->requestUtil = $requestUtil;
+        $this->storageManager = $storageManager;
     }
 
 
@@ -54,37 +70,21 @@ class ImageProcessingController extends Controller
      * @param string $id
      * @param string $extension
      *
-     * @return RedirectResponse
+     * @return void
      */
     public function crop(int $width, int $height, string $id, string $extension)
     {
-        $src = 'http://filesystem.local/files/e0443_24_01_2018/e0443b2f-010c-11e8-aac4-0242ac190002.jpg';
-        $options = [
-            'http' => [
-                'method'=>"GET",
-                'header'=>"Accept-language: en\r\n".
-                    "User-Agent: Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.2 (KHTML, like Gecko) Chrome/22.0.1216.0 Safari/537.2\r\n"
-            ]
-        ];
-        $context  = stream_context_create($options);
-        $image = @file_get_contents($src, false, $context);
-        $file = 'php://memory'; //full memory buffer
-        $o = new \SplFileObject($file, 'w+');
-        $o->fwrite($image);
+        $storedFile = $this->storageManager->getStoredFile($id);
+        $this->imageProcessingManager->crop($storedFile->getFile(), $width, $height);
 
-
-        // $manager = \Intervention\Image\ImageManagerStatic::configure(['driver' => 'imagick']);
-        return \Intervention\Image\ImageManagerStatic::make($o)->resize(100, 300)->response('jpeg');
-
-        dd('asd', $manager->make($src)->resize(100, 50));
-
-
-        try {
-            $imagePublicPath = $this->imageProcessingManager->crop($id, $width, $id);
-        } catch (ImageAlreadyProcessed $e) {
-            $imagePublicPath = $e->getProcessedImage()->getAbsolutePublicPath();
-        }
-
-        return new RedirectResponse($imagePublicPath);
+        /** @ToDo: сейчас файлы отдаются самим PHP, вероятно, это может вылезти боком, посмотрим.  */
+//        try {
+//            $storedFile = $this->storageManager->getStoredFile($id);
+//            $processedImage = $this->imageProcessingManager->crop($storedFile->getFile(), $width, $height);
+//        } catch (ImageAlreadyProcessed $e) {
+//            $processedImage = $e->getProcessedImage();
+//        }
+//
+//        return new RedirectResponse($processedImage->getAbsolutePublicPath());
     }
 }
