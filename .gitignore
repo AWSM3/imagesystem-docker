@@ -9,10 +9,8 @@ docker-compose.yml
 # Local data, like DB or stored files
 data/database/*
 data/storage/*
-application/public/files/
+application/public/images/
 etc/ssl/
 
 # Logs
 logs/nginx/
-
-application/public/images/
