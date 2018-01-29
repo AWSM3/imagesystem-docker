@@ -1,23 +1,18 @@
 <?php
 /**
  * Author: AWSM3
- * ...description...
- * NotAllowedSizes.php
+ * NotAllowedSizesException.php
  */
 declare(strict_types=1);
 
 /** @namespace */
-
 namespace App\Service\ImageProcessing\Exception;
 
-/** @uses */
-
 /**
- * Class NotAllowedSizes
+ * Class NotAllowedSizesException
  *
  * @package App\Service\ImageProcessing\Exception
  */
-class NotAllowedSizes
+class NotAllowedSizesException extends \RuntimeException
 {
-
 }

@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace App\Service\ImageProcessing;
 
 /** @uses */
+use App\Service\ImageProcessing\Exception\NotAllowedSizesException;
 use League\Glide\Server;
 use League\Glide\ServerFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -22,6 +23,10 @@ use Symfony\Component\HttpFoundation\File\File;
  */
 class Manager
 {
+    const
+        MAX_WIDTH = 1000,
+        MAX_HEIGHT = 1000;
+
     /** @var Server */
     private $imageServer;
     /** @var ContainerInterface */
@@ -54,8 +59,10 @@ class Manager
      *
      * @return void
      */
-    public function crop(File $file, int $width, int $height): void {
+    public function crop(File $file, int $width, int $height): void
+    {
         $publicPath = $this->getPublicPath($file);
+        $this->checkSizes($width, $height);
 
         $this->imageServer->outputImage($publicPath, ['w' => $width, 'h' => $height, 'fit' => 'crop-center']);
     }
@@ -67,8 +74,10 @@ class Manager
      *
      * @return void
      */
-    public function resize(File $file, int $width, int $height): void {
+    public function resize(File $file, int $width, int $height): void
+    {
         $publicPath = $this->getPublicPath($file);
+        $this->checkSizes($width, $height);
 
         $this->imageServer->outputImage($publicPath, ['w' => $width, 'h' => $height]);
     }
@@ -78,10 +87,25 @@ class Manager
      *
      * @return mixed
      */
-    private function getPublicPath(File $file): mixed
+    private function getPublicPath(File $file): string
     {
         $publicPath = str_replace($this->sourcePath, '', $file->getRealPath());
 
         return $publicPath;
+    }
+
+    /**
+     * @param $width
+     * @param $height
+     *
+     * @throws NotAllowedSizesException
+     */
+    private function checkSizes($width, $height)
+    {
+        if ($width > self::MAX_WIDTH || $height > self::MAX_HEIGHT) {
+            throw new NotAllowedSizesException(
+                'Недопустимые значения размеров. Максимальная высота:'.self::MAX_HEIGHT.'. Максимальная ширина:'.self::MAX_WIDTH
+            );
+        }
     }
 }

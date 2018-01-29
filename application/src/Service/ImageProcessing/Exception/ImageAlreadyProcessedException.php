@@ -1,7 +1,7 @@
 <?php
 /**
  * Author: AWSM3
- * ImageAlreadyProcessed.php
+ * ImageAlreadyProcessedException.php
  */
 declare(strict_types=1);
 
@@ -13,17 +13,17 @@ use App\Service\ImageProcessing\Interfaces\ProcessedImageInterface;
 use Throwable;
 
 /**
- * Class ImageAlreadyProcessed
+ * Class ImageAlreadyProcessedException
  *
  * @package App\Service\ImageProcessing\Exception
  */
-class ImageAlreadyProcessed extends \RuntimeException
+class ImageAlreadyProcessedException extends \RuntimeException
 {
     /** @var ProcessedImageInterface */
     private $processedImage;
 
     /**
-     * ImageAlreadyProcessed constructor.
+     * ImageAlreadyProcessedException constructor.
      *
      * @param string $message
      * @param ProcessedImageInterface $processedImage

@@ -14,6 +14,7 @@ use App\Service\ImageProcessing\Manager as ImageProcessingManager;
 use App\Service\Storage\Manager\FileSystemManager as FileSystemStorageManager;
 use App\Utils\Http\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -70,18 +71,22 @@ class ImageProcessingController extends Controller
      * @param string $id
      * @param string $extension
      *
-     * @return void
+     * @return JsonResponse|mixed
      */
     public function crop(int $width, int $height, string $id, string $extension)
     {
         $storedFile = $this->storageManager->getStoredFile($id);
-        $this->imageProcessingManager->crop($storedFile->getFile(), $width, $height);
+        try {
+            $this->imageProcessingManager->crop($storedFile->getFile(), $width, $height);
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => false]);
+        }
 
         /** @ToDo: сейчас файлы отдаются самим PHP, вероятно, это может вылезти боком, посмотрим.  */
 //        try {
 //            $storedFile = $this->storageManager->getStoredFile($id);
 //            $processedImage = $this->imageProcessingManager->crop($storedFile->getFile(), $width, $height);
-//        } catch (ImageAlreadyProcessed $e) {
+//        } catch (ImageAlreadyProcessedException $e) {
 //            $processedImage = $e->getProcessedImage();
 //        }
 //
@@ -105,11 +110,15 @@ class ImageProcessingController extends Controller
      * @param string $id
      * @param string $extension
      *
-     * @return void
+     * @return JsonResponse|mixed
      */
     public function resize(int $width, int $height, string $id, string $extension)
     {
-        $storedFile = $this->storageManager->getStoredFile($id);
-        $this->imageProcessingManager->resize($storedFile->getFile(), $width, $height);
+        try {
+            $storedFile = $this->storageManager->getStoredFile($id);
+            $this->imageProcessingManager->resize($storedFile->getFile(), $width, $height);
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => false]);
+        }
     }
 }
