@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  # Web server
+  web:
+    image: nginx
+    volumes:
+      - './etc/nginx/default.conf:/etc/nginx/conf.d/default.conf'
+      - './etc/ssl:/etc/ssl'
+      - './application:/var/www/html'
+      - './etc/nginx/default.template.conf:/etc/nginx/conf.d/default.template'
+      - './logs/nginx:/var/log/nginx'
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      - 'NGINX_HOST=${NGINX_HOST}'
+    command: /bin/bash -c "envsubst '$$NGINX_HOST' < /etc/nginx/conf.d/default.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    restart: always
+    depends_on:
+      - php
+
+  # PHP
+  php:
+    build: ./containers/php
+    restart: always
+    volumes:
+      - './etc/php/php.ini:/usr/local/etc/php/conf.d/php.ini'
+      - './application:/var/www/html'
+      - './data/storage:/var/storage'
+
+  # Composer
+  composer:
+    image: composer
+    volumes:
+      - './application:/app'
+    command: install
+    depends_on:
+      - php
+
+  # MySQL
+  # database:
+  #   image: mysql
+  #   restart: always
+  #   environment:
+  #     - 'MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}'
+  #     - 'MYSQL_USER=${MYSQL_USER}'
+  #     - 'MYSQL_PASSWORD=${MYSQL_PASSWORD}'
+  #   ports:
+  #     - '8989:3306'
+  #   volumes:
+  #     - './data/database/mysql:/var/lib/mysql'

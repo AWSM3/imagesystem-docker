@@ -3,6 +3,8 @@
 
 # Environment
 .env
+docker-compose.proxy.yml
+docker-compose.yml
 
 # Local data, like DB or stored files
 data/database/*
