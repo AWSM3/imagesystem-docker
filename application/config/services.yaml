@@ -4,6 +4,7 @@ parameters:
   filesystem_url: '%env(FILESYSTEM_URL)%'
   imagestorage_dir: '%env(IMAGESTORAGE_DIR)%'
   imagecachestorage_dir: '%env(IMAGECACHESTORAGE_DIR)%'
+  glide_driver: 'imagick'
 
 services:
     # default configuration for services in *this* file

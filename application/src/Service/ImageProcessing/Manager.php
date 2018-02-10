@@ -47,6 +47,7 @@ class Manager
             [
                 'source' => $container->getParameter('imagestorage_dir'),
                 'cache'  => $container->getParameter('imagecachestorage_dir'),
+                'driver' => $container->getParameter('glide_driver')
             ]
         );
         $this->container = $container;
