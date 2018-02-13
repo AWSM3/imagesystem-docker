@@ -10,6 +10,8 @@ namespace App\Controller;
 
 /** @uses */
 use App\Api\FileSystem\Client;
+use App\Response\ResponseInterface;
+use App\Response\Types\ImageResponse;
 use App\Service\ImageProcessing\Manager as ImageProcessingManager;
 use App\Service\Storage\Manager\FileSystemManager as FileSystemStorageManager;
 use App\Utils\Http\Request;
@@ -32,6 +34,8 @@ class ImageProcessingController extends Controller
     private $requestUtil;
     /** @var FileSystemStorageManager */
     private $storageManager;
+    /** @var ImageResponse */
+    private $imageResponse;
 
     /**
      * ImageProcessingController constructor.
@@ -40,17 +44,20 @@ class ImageProcessingController extends Controller
      * @param Client $filesystemClient
      * @param Request $requestUtil
      * @param FileSystemStorageManager $storageManager
+     * @param ImageResponse $imageResponse
      */
     public function __construct(
         ImageProcessingManager $imageProcessingManager,
         Client $filesystemClient,
         Request $requestUtil,
-        FileSystemStorageManager $storageManager
+        FileSystemStorageManager $storageManager,
+        ImageResponse $imageResponse
     ) {
         $this->imageProcessingManager = $imageProcessingManager;
         $this->filesystemClient = $filesystemClient;
         $this->requestUtil = $requestUtil;
         $this->storageManager = $storageManager;
+        $this->imageResponse = $imageResponse;
     }
 
 
@@ -76,21 +83,22 @@ class ImageProcessingController extends Controller
     public function crop(int $width, int $height, string $id, string $extension)
     {
         $storedFile = $this->storageManager->getStoredFile($id);
+        $imageResponse = $this->imageResponse;
         try {
-            $this->imageProcessingManager->crop($storedFile->getFile(), $width, $height);
+            $cachedImagePath = $this->imageProcessingManager->crop($storedFile->getFile(), $width, $height);
+            $destinationFilePath = $cachedImagePath.'.'.$storedFile->getFile()->getExtension();
+            $storedFile = $this->storageManager->copyFile($cachedImagePath, $destinationFilePath);
+
+            $imageResponse->setData($this->storageManager->getPublicPath($storedFile));
+            $imageResponse->setStatus(true);
+            $imageResponse->setHttpStatus(ResponseInterface::HTTP_OK);
         } catch (\Exception $e) {
-            return new JsonResponse(['status' => false]);
+            $imageResponse->setStatus(false);
+            $imageResponse->setHttpStatus(ResponseInterface::HTTP_BAD_REQUEST);
         }
 
-        /** @ToDo: сейчас файлы отдаются самим PHP, вероятно, это может вылезти боком, посмотрим.  */
-//        try {
-//            $storedFile = $this->storageManager->getStoredFile($id);
-//            $processedImage = $this->imageProcessingManager->crop($storedFile->getFile(), $width, $height);
-//        } catch (ImageAlreadyProcessedException $e) {
-//            $processedImage = $e->getProcessedImage();
-//        }
-//
-//        return new RedirectResponse($processedImage->getAbsolutePublicPath());
+
+        return new JsonResponse($imageResponse->toArray(), $imageResponse->getHttpStatus());
     }
 
     /**
@@ -114,11 +122,22 @@ class ImageProcessingController extends Controller
      */
     public function resize(int $width, int $height, string $id, string $extension)
     {
+        $storedFile = $this->storageManager->getStoredFile($id);
+        $imageResponse = $this->imageResponse;
         try {
-            $storedFile = $this->storageManager->getStoredFile($id);
-            $this->imageProcessingManager->resize($storedFile->getFile(), $width, $height);
+            $cachedImagePath = $this->imageProcessingManager->resize($storedFile->getFile(), $width, $height);
+            $destinationFilePath = $cachedImagePath.'.'.$storedFile->getFile()->getExtension();
+            $storedFile = $this->storageManager->copyFile($cachedImagePath, $destinationFilePath);
+
+            $imageResponse->setStatus(true);
+            $imageResponse->setData($this->storageManager->getPublicPath($storedFile));
+            $imageResponse->setHttpStatus(ResponseInterface::HTTP_OK);
         } catch (\Exception $e) {
-            return new JsonResponse(['status' => false]);
+            $imageResponse->setStatus(false);
+            $imageResponse->setHttpStatus(ResponseInterface::HTTP_BAD_REQUEST);
         }
+
+
+        return new JsonResponse($imageResponse->toArray(), $imageResponse->getHttpStatus());
     }
 }
