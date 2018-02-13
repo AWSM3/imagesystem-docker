@@ -9,9 +9,10 @@ declare(strict_types=1);
 namespace App\Utils\Http;
 
 /** @uses */
-
 use App\Api\FileSystem\Interfaces\GetFileResponseInterface;
 use GuzzleHttp\Client;
+use Symfony\Component\HttpFoundation\Request as HttpFoundationRequest;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Class Request
@@ -22,15 +23,19 @@ class Request
 {
     /** @var Client */
     private $httpClient;
+    /** @var null|HttpFoundationRequest */
+    private $request;
 
     /**
      * Request constructor.
      *
      * @param Client $httpClient
+     * @param RequestStack $requestStack
      */
-    public function __construct(Client $httpClient)
+    public function __construct(Client $httpClient, RequestStack $requestStack)
     {
         $this->httpClient = $httpClient;
+        $this->request = $requestStack->getCurrentRequest();
     }
 
 
@@ -45,5 +50,15 @@ class Request
         $content = $response->getBody()->getContents();
 
         return $content;
+    }
+
+    /**
+     * @param string $path
+     *
+     * @return string
+     */
+    public function makeAbsolutePublicPath(string $path): string
+    {
+        return "{$this->request->getSchemeAndHttpHost()}".$path;
     }
 }
