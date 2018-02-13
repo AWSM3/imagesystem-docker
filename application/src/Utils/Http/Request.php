@@ -59,6 +59,6 @@ class Request
      */
     public function makeAbsolutePublicPath(string $path): string
     {
-        return "{$this->request->getSchemeAndHttpHost()}".$path;
+        return "//{$this->request->getHttpHost()}".$path;
     }
 }
