@@ -33,6 +33,8 @@ class Manager
     private $container;
     /** @var string */
     private $sourcePath;
+    /** @var string */
+    private $cachePath;
 
     /**
      * Manager constructor.
@@ -43,6 +45,7 @@ class Manager
     public function __construct(ContainerInterface $container, ServerFactory $imageServerFactory)
     {
         $this->sourcePath = $container->getParameter('imagestorage_dir');
+        $this->cachePath = $container->getParameter('imagecachestorage_dir');
         $this->imageServer = $imageServerFactory->create(
             [
                 'source' => $container->getParameter('imagestorage_dir'),
@@ -58,14 +61,21 @@ class Manager
      * @param int $width
      * @param int $height
      *
-     * @return void
+     * @return string
+     * @throws \Exception
      */
-    public function crop(File $file, int $width, int $height): void
+    public function crop(File $file, int $width, int $height): string
     {
         $publicPath = $this->getPublicPath($file);
         $this->checkSizes($width, $height);
 
-        $this->imageServer->outputImage($publicPath, ['w' => $width, 'h' => $height, 'fit' => 'crop-center']);
+        try {
+            $cachedImagePath = $this->imageServer->makeImage($publicPath, ['w' => $width, 'h' => $height, 'fit' => 'crop-center']);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        return $this->getCachedPath($cachedImagePath);
     }
 
     /**
@@ -73,14 +83,21 @@ class Manager
      * @param int $width
      * @param int $height
      *
-     * @return void
+     * @return string
+     * @throws \Exception
      */
-    public function resize(File $file, int $width, int $height): void
+    public function resize(File $file, int $width, int $height): string
     {
         $publicPath = $this->getPublicPath($file);
         $this->checkSizes($width, $height);
 
-        $this->imageServer->outputImage($publicPath, ['w' => $width, 'h' => $height]);
+        try {
+            $cachedImagePath = $this->imageServer->makeImage($publicPath, ['w' => $width, 'h' => $height]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        return $this->getCachedPath($cachedImagePath);
     }
 
     /**
@@ -88,7 +105,7 @@ class Manager
      *
      * @return mixed
      */
-    private function getPublicPath(File $file): string
+    public function getPublicPath(File $file): string
     {
         $publicPath = str_replace($this->sourcePath, '', $file->getRealPath());
 
@@ -108,5 +125,15 @@ class Manager
                 'Недопустимые значения размеров. Максимальная высота:'.self::MAX_HEIGHT.'. Максимальная ширина:'.self::MAX_WIDTH
             );
         }
+    }
+
+    /**
+     * @param string $path
+     *
+     * @return string
+     */
+    private function getCachedPath(string $path): string
+    {
+        return $this->cachePath.DIRECTORY_SEPARATOR.$path;
     }
 }
