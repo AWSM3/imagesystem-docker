@@ -48,6 +48,40 @@ class Manager
     }
 
     /**
+     * @param string $originalPath
+     * @param string $destinationPath
+     *
+     * @throws \Exception
+     * @return StoredFileInterface
+     */
+    public function copyFile(string $originalPath, string $destinationPath): StoredFileInterface
+    {
+        $this->checkFileExists($originalPath);
+        $file = new File($originalPath);
+        try {
+            $this->filesystem->copy($originalPath, $destinationPath);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        return $this->getFile($destinationPath);
+    }
+
+    /**
+     * @param StoredFileInterface $storedFile
+     *
+     * @return string
+     */
+    public function getPublicPath(StoredFileInterface $storedFile): string
+    {
+        $sourcePath = $this->container->getParameter('imagestorage_dir');
+        $publicImagePath = $this->container->getParameter('publicimagestorage_dir');
+        $publicPath = $publicImagePath . str_replace($sourcePath, '', $storedFile->getFile()->getRealPath());
+
+        return $this->requestUtil->makeAbsolutePublicPath($publicPath);
+    }
+
+    /**
      * @param string $content
      *
      * @param string $filename
@@ -69,9 +103,9 @@ class Manager
 
     /**
      * @param string $filename
-     * @param string $sharding
+     * @param string|null $sharding
      */
-    protected function checkFileExists(string $filename, string $sharding)
+    protected function checkFileExists(string $filename, string $sharding = null)
     {
         $filePath = $this->makeFilePath($filename, $sharding);
         if ($this->filesystem->exists($filePath)) {
@@ -95,11 +129,11 @@ class Manager
 
     /**
      * @param string $filename
-     * @param string $sharding
+     * @param string|null $sharding
      *
      * @return string
      */
-    protected function makeFilePath(string $filename, string $sharding): string
+    protected function makeFilePath(string $filename, string $sharding = null): string
     {
         $storagePath = $this->container->getParameter('imagestorage_dir');
         $filePath = $storagePath.DIRECTORY_SEPARATOR.static::SHARDING_PLACEHOLDER.$filename;
