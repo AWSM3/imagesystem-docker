@@ -6,6 +6,7 @@
         "ext-iconv": "*",
         "guzzlehttp/guzzle": "^6.3",
         "league/glide": "^1.2",
+        "nelmio/cors-bundle": "^1.5",
         "sensio/framework-extra-bundle": "^5.1",
         "symfony/console": "^4.0",
         "symfony/flex": "^1.0",
